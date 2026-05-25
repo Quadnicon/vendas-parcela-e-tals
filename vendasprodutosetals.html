@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compras · Lista de itens</title>
+    <style>
+        /* CSS simples - PRETO E BRANCO - sem frescuras */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: white;
+            font-family: 'Courier New', 'Segoe UI', monospace, system-ui;
+            padding: 2rem 1rem;
+            color: black;
+        }
+
+        /* container principal */
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border: 2px solid black;
+            padding: 1.5rem;
+        }
+
+        /* cabeçalho */
+        h1 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            border-bottom: 2px solid black;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+        }
+
+        /* área dos produtos */
+        .produtos-area {
+            margin-bottom: 1.5rem;
+        }
+
+        .produto-linha {
+            display: flex;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+            align-items: center;
+            flex-wrap: wrap;
+            border: 1px solid #aaa;
+            padding: 0.6rem;
+            background: #fefefe;
+        }
+
+        .campo {
+            flex: 2;
+            min-width: 130px;
+        }
+
+        .campo-valor {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            margin-bottom: 0.2rem;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid black;
+            background: white;
+            font-family: monospace;
+            font-size: 0.9rem;
+            border-radius: 0px;
+        }
+
+        input:focus {
+            outline: none;
+            border: 2px solid black;
+            background: #f5f5f5;
+        }
+
+        /* botão remover */
+        .btn-remover {
+            background: white;
+            border: 1px solid black;
+            padding: 0.4rem 0.7rem;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 0.8rem;
+            transition: none;
+        }
+
+        .btn-remover:hover {
+            background: black;
+            color: white;
+        }
+
+        /* botão adicionar */
+        .btn-add {
+            background: white;
+            border: 2px solid black;
+            padding: 0.6rem 1rem;
+            width: 100%;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin: 0.5rem 0 1.5rem 0;
+            text-transform: uppercase;
+        }
+
+        .btn-add:hover {
+            background: black;
+            color: white;
+        }
+
+        /* painel de totais */
+        .totais-painel {
+            border-top: 2px solid black;
+            border-bottom: 2px solid black;
+            padding: 1rem 0;
+            margin: 1rem 0;
+        }
+
+        .linha-total {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .valor {
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        /* seção parcelamento com seta */
+        .parcelamento-bloco {
+            margin: 1rem 0;
+            border: 1px solid black;
+            background: white;
+        }
+
+        .cabecalho-parcela {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem;
+            cursor: pointer;
+            font-weight: bold;
+            background: #f2f2f2;
+            border-bottom: 1px solid black;
+        }
+
+        .seta {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .opcoes-parcela {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            background: white;
+        }
+
+        .opcoes-parcela.aberto {
+            max-height: 200px;
+            padding: 0.8rem;
+        }
+
+        .botoes-parcela {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .btn-parcela {
+            background: white;
+            border: 1px solid black;
+            padding: 0.3rem 0.8rem;
+            font-family: monospace;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-parcela.ativo {
+            background: black;
+            color: white;
+        }
+
+        .info-parcela {
+            margin-top: 0.5rem;
+            font-size: 0.8rem;
+            font-family: monospace;
+            border-top: 1px dashed #aaa;
+            padding-top: 0.5rem;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid black;
+            margin: 0.8rem 0;
+        }
+
+        footer {
+            text-align: center;
+            font-size: 0.7rem;
+            margin-top: 1rem;
+            border-top: 1px solid #ccc;
+            padding-top: 0.8rem;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📋 LISTA DE COMPRAS</h1>
+
+    <div id="produtosContainer" class="produtos-area">
+        <!-- linhas serão inseridas via JS -->
+    </div>
+
+    <button id="addProdutoBtn" class="btn-add">+ ADICIONAR PRODUTO</button>
+
+    <div class="totais-painel">
+        <div class="linha-total">
+            <span>TOTAL DA VENDA</span>
+            <span class="valor" id="totalVenda">R$ 0,00</span>
+        </div>
+        <div class="linha-total">
+            <span>VALOR 10%</span>
+            <span class="valor" id="valor10">R$ 0,00</span>
+        </div>
+        <div class="linha-total">
+            <span>TOTAL PARCELADO (base)</span>
+            <span class="valor" id="totalBase">R$ 0,00</span>
+        </div>
+    </div>
+
+    <!-- Bloco parcelamento com seta -->
+    <div class="parcelamento-bloco">
+        <div id="toggleParcelas" class="cabecalho-parcela">
+            <span>💰 TOTAL PARCELADO</span>
+            <span class="seta" id="setaSinal">▼</span>
+        </div>
+        <div id="opcoesParcelas" class="opcoes-parcela">
+            <div class="botoes-parcela" id="botoesParcelasContainer">
+                <!-- botões 1x a 10x gerados via JS -->
+            </div>
+            <div id="infoParcelaSelecionada" class="info-parcela">
+                Nenhuma parcela selecionada
+            </div>
+        </div>
+    </div>
+
+    <hr>
+    <div class="linha-total" style="border:1px solid black; padding:0.6rem; margin-top:0.5rem; background:#fafafa;">
+        <span>📆 VALOR DA PARCELA</span>
+        <span class="valor" id="valorParcela">R$ 0,00</span>
+    </div>
+
+    <footer>
+        sem pop-ups · edite os valores livremente
+    </footer>
+</div>
+
+<script>
+    // =========================================
+    // BACKEND SIMPLES: lista de produtos
+    // =========================================
+    let produtos = [
+        { nome: "Café", preco: 12.50 },
+        { nome: "Arroz", preco: 23.90 }
+    ];
+
+    let parcelasSelecionadas = 1;      // padrão 1x
+    let menuParcelasAberto = false;     // estado da seta
+
+    // elementos DOM
+    const containerProdutos = document.getElementById("produtosContainer");
+    const btnAdd = document.getElementById("addProdutoBtn");
+    const totalVendaSpan = document.getElementById("totalVenda");
+    const valor10Span = document.getElementById("valor10");
+    const totalBaseSpan = document.getElementById("totalBase");
+    const valorParcelaSpan = document.getElementById("valorParcela");
+    const toggleParcelasDiv = document.getElementById("toggleParcelas");
+    const opcoesParcelasDiv = document.getElementById("opcoesParcelas");
+    const setaSinal = document.getElementById("setaSinal");
+    const botoesContainer = document.getElementById("botoesParcelasContainer");
+    const infoParcelaDiv = document.getElementById("infoParcelaSelecionada");
+
+    // ----- FUNÇÕES DE CÁLCULO (backend) -----
+    function calcularTotalVenda() {
+        let total = 0;
+        for (let p of produtos) {
+            let preco = (typeof p.preco === "number" && !isNaN(p.preco)) ? p.preco : 0;
+            total += preco;
+        }
+        return total;
+    }
+
+    function calcular10Porcento(total) {
+        return total * 0.10;
+    }
+
+    function formatarMoeda(valor) {
+        return "R$ " + valor.toFixed(2).replace(".", ",");
+    }
+
+    // atualiza todos os valores na tela (total venda, 10%, base, e parcela)
+    function atualizarTodosTotais() {
+        const total = calcularTotalVenda();
+        const dezPorcento = calcular10Porcento(total);
+        totalVendaSpan.innerText = formatarMoeda(total);
+        valor10Span.innerText = formatarMoeda(dezPorcento);
+        totalBaseSpan.innerText = formatarMoeda(total);
+        
+        // recalcula valor da parcela
+        atualizarValorParcela();
+    }
+
+    function atualizarValorParcela() {
+        const total = calcularTotalVenda();
+        if (parcelasSelecionadas > 0 && total > 0) {
+            const parcelaValor = total / parcelasSelecionadas;
+            valorParcelaSpan.innerText = formatarMoeda(parcelaValor);
+            infoParcelaDiv.innerHTML = `➜ ${parcelasSelecionadas}x de ${formatarMoeda(parcelaValor)} (total: ${formatarMoeda(total)})`;
+        } else if (total === 0) {
+            valorParcelaSpan.innerText = formatarMoeda(0);
+            infoParcelaDiv.innerHTML = `✖ Adicione produtos para parcelar`;
+        } else {
+            valorParcelaSpan.innerText = formatarMoeda(0);
+            infoParcelaDiv.innerHTML = `Selecione número de parcelas`;
+        }
+    }
+
+    // ----- RENDERIZA OS PRODUTOS NA TELA -----
+    function renderizarProdutos() {
+        containerProdutos.innerHTML = "";
+        if (produtos.length === 0) {
+            const msgVazio = document.createElement("div");
+            msgVazio.style.textAlign = "center";
+            msgVazio.style.padding = "1rem";
+            msgVazio.style.border = "1px solid #aaa";
+            msgVazio.innerText = "Nenhum produto. Clique em ADICIONAR.";
+            containerProdutos.appendChild(msgVazio);
+        } else {
+            produtos.forEach((prod, idx) => {
+                const linha = document.createElement("div");
+                linha.className = "produto-linha";
+                linha.setAttribute("data-index", idx);
+
+                // campo nome produto
+                const divNome = document.createElement("div");
+                divNome.className = "campo";
+                divNome.innerHTML = `<label>PRODUTO</label><input type="text" class="input-nome" value="${escaparHtml(prod.nome)}">`;
+                
+                // campo valor
+                const divValor = document.createElement("div");
+                divValor.className = "campo-valor";
+                divValor.innerHTML = `<label>VALOR (R$)</label><input type="number" step="0.01" class="input-preco" value="${prod.preco.toFixed(2)}">`;
+                
+                // botão remover
+                const btnRemover = document.createElement("button");
+                btnRemover.innerText = "X";
+                btnRemover.className = "btn-remover";
+                btnRemover.title = "Remover produto";
+                
+                // eventos
+                const inputNome = divNome.querySelector(".input-nome");
+                const inputPreco = divValor.querySelector(".input-preco");
+                
+                inputNome.addEventListener("input", (e) => {
+                    produtos[idx].nome = e.target.value;
+                    // só altera nome, não mexe no total
+                });
+                
+                inputPreco.addEventListener("input", (e) => {
+                    let val = parseFloat(e.target.value);
+                    if (isNaN(val)) val = 0;
+                    produtos[idx].preco = val;
+                    atualizarTodosTotais();   // recalcula totais e parcelas
+                });
+                
+                btnRemover.addEventListener("click", () => {
+                    removerProduto(idx);
+                });
+                
+                linha.appendChild(divNome);
+                linha.appendChild(divValor);
+                linha.appendChild(btnRemover);
+                containerProdutos.appendChild(linha);
+            });
+        }
+        atualizarTodosTotais();
+    }
+
+    function removerProduto(index) {
+        if (index >= 0 && index < produtos.length) {
+            produtos.splice(index, 1);
+            renderizarProdutos();
+            // manter destaque dos botões de parcelas
+            destacarBotaoParcelaAtivo();
+        }
+    }
+
+    function adicionarProduto() {
+        produtos.push({ nome: "Novo item", preco: 0.00 });
+        renderizarProdutos();
+        // rolar até o final
+        setTimeout(() => {
+            if (containerProdutos.lastChild) {
+                containerProdutos.lastChild.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+        }, 20);
+        // após adicionar, atualiza estado dos botões parcelas (caso já estivessem abertos)
+        destacarBotaoParcelaAtivo();
+    }
+
+    function escaparHtml(texto) {
+        if (!texto) return "";
+        return texto.replace(/[&<>]/g, function(m) {
+            if (m === "&") return "&amp;";
+            if (m === "<") return "&lt;";
+            if (m === ">") return "&gt;";
+            return m;
+        });
+    }
+
+    // ----- GERAR BOTÕES DE PARCELAS (1x a 10x) -----
+    function gerarBotoesParcelas() {
+        botoesContainer.innerHTML = "";
+        for (let i = 1; i <= 10; i++) {
+            const botao = document.createElement("button");
+            botao.innerText = `${i}x`;
+            botao.className = "btn-parcela";
+            if (i === parcelasSelecionadas) botao.classList.add("ativo");
+            botao.addEventListener("click", (e) => {
+                e.stopPropagation();
+                parcelasSelecionadas = i;
+                destacarBotaoParcelaAtivo();
+                atualizarValorParcela();   // atualiza o valor da parcela e info
+            });
+            botoesContainer.appendChild(botao);
+        }
+    }
+
+    function destacarBotaoParcelaAtivo() {
+        const botoes = document.querySelectorAll(".btn-parcela");
+        botoes.forEach(btn => {
+            const txt = btn.innerText;
+            const num = parseInt(txt, 10);
+            if (num === parcelasSelecionadas) {
+                btn.classList.add("ativo");
+            } else {
+                btn.classList.remove("ativo");
+            }
+        });
+        atualizarValorParcela(); // garante que info fique correta
+    }
+
+    // ----- FUNÇÃO DA SETA / ABRIR/FECHAR (sem pop-ups) -----
+    function toggleMenuParcelas() {
+        menuParcelasAberto = !menuParcelasAberto;
+        if (menuParcelasAberto) {
+            opcoesParcelasDiv.classList.add("aberto");
+            setaSinal.innerHTML = "▲";
+        } else {
+            opcoesParcelasDiv.classList.remove("aberto");
+            setaSinal.innerHTML = "▼";
+        }
+    }
+
+    // ----- INICIALIZAÇÃO -----
+    function init() {
+        renderizarProdutos();
+        gerarBotoesParcelas();
+        
+        // estado inicial do menu parcelas (fechado)
+        opcoesParcelasDiv.classList.remove("aberto");
+        setaSinal.innerHTML = "▼";
+        menuParcelasAberto = false;
+        
+        // eventos
+        btnAdd.addEventListener("click", () => {
+            adicionarProduto();
+        });
+        
+        toggleParcelasDiv.addEventListener("click", (e) => {
+            e.preventDefault();
+            toggleMenuParcelas();
+        });
+        
+        // garantir que quando o total mudar (via inputs) o valor da parcela e info sejam atualizados
+        // já feito dentro de atualizarTodosTotais e atualizarValorParcela
+        // força consistência
+        atualizarTodosTotais();
+    }
+    
+    init();
+</script>
+</body>
+</html>
